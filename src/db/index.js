@@ -4,8 +4,6 @@ import { DB_NAME } from "../constants.js";
 
 const connectDb = async () => {
     try {
-        console.log(`MY MONGODB URI : ${process.env.MONGODB_URI}`)
-        console.log(`MY MONGODB DBNAME : ${DB_NAME}`)
         const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}/${DB_NAME}`) 
         console.log(`\n MY MONGODB CONNECTED -> HOST : ${connectionInstance.connection.host}`)      
     } catch (error) {
@@ -16,7 +14,7 @@ const connectDb = async () => {
 
 export default connectDb
 
-
+ 
 /*
 
 22) so mongoose and dbname la import kela. so connection cha function cha ek lambda banavla and tyala connect variable madhe store kela so mg ya connect variable la apan directly aplya scr madhil index.js file amdhe call karnar so he connection cha lambda function mg tithe call zalyamule execute honar. async lavla same and try catch lavla then error la print kela. d
