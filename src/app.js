@@ -23,6 +23,13 @@ app.use(express.static("public"))
 
 app.use(cookieParser())
 
+
+import userRouter from './routes/user.routes.js'
+
+// routes declaration 
+// app.use("/users", userRouter)
+app.use("/api/v1/users", userRouter)
+
 export { app }
 
 
@@ -50,5 +57,13 @@ export { app }
 45) so apan cookieparser la trr useach nahi kela na so tyach kam ky ahe. so tyach kam evdach ahe ki mi maza server kadun jo user cha browser ahe na tyacha atla cookies access karu shaku and tyacha cookies set pn karu shaku or basically tyacha cookies var crud operations mi karu shaku yasathi apan cookieparser cha use karto. so apan cookies na pn securely store karu shakto so server only tyala read and access karu shakto. so yala pn configure karav lagta so same app.use madhe cookieparser la pn configure kela. so yat pn cors sarkhe options miltat apnala but te mostly useach nahit hot. 
 
 46) now middlewares ky astat bagu so chala backend_notes.txt file madhe
+
+78) so apan ky karnar jasa apnala he coofieParser vagere configurations zalele astat tyacha nantarach sagla routes na vagere apna import karto. so export cha adi routes na first import kela. so bolnar import trr varti kela pahije na but nahi apan karu shakto kute pn and production grade code madhe pn ithech lihila jata. so userRoute create karun user.routes.js file la import kela. so adi apan ky karaycho app file madhe app.get karun directly declare karaycho and ithech routes lihun controller lihun response pn pathavat hoto na. but ata apan routes na pn separate kelay, controllers na pn separate kelay na so tyamulech router la ananyasathi middleware chi garaj padnar. so app.get cha jagi app.use la ghetla bec we know na middlware sathi use vaparto apan. so app.use kartach apan ata routes lihu shakto na. so suppose ata lihila "/users" and then coma apanala kutla router call karaychay te lihaych so mala user router call karaychay so tyala tithe takla. so yachamule ky honar ki jasa kutla user url madhe users endpoint takel tasa apan control denar userRouter kade. so user.routes.js file madhe control janar. now ithe apan sangnar ki ithun kutlay route var mala jaychay. so chala user.routes.js file madhe.
+
+80) now apan only /users lihila na route but always only evdach nahi lihila jat trr apan api difine kartoy na so /api pn takla jata url madhe always and api cha version pn specify kela jata like v1 so hi changli pracctice aste. so tyamule apla route only /users na thevta /api/v1/users asa thevla jato production grade code madhe pn. so tyamule ata apla url honar like http://localhost:8080/api/v1/users/register asa. 
+
+81) NOTE : SOME INFO ABOUT EXPORT AND IMPORT SYNTAX : so apan kadi kadi import any_name from __ asa import karto na like made kadi kadi kutla pn name deto na. so suppose mi index.js file madhun export kelay ek function and tyala mala app.js file madhe import kelay so mi jrr index.js file madhun export default fun_name asa kela asel like mi jrr export kartana default keyword lavla asel tarach mi ithe app.js file madhe tyala import kartana madhe kahi pn name deu shakto and from karun tyala import karu shakto jrr mi export kartana default keyword lavla nasel directly export fun_name asa export kela asel trr tya case madhe ya app.js file madhe tyala import kartana mala {} yacha use karava lagnar like import { any_name } from ___ asa karav lagnar.
+
+82) so ithe mi run kela app la npm run dev karun so mala kahi errors alya so bagu tya kasha resolve kelya so chala backend_notes.txt file madhe.
 
 */
