@@ -20,7 +20,7 @@ const registerUser = asyncHandler( async (req, res) => {
     // 9) teutnr response to fontend. 
 
     const { fullName, username, email, password} = req.body
-    console.log(`username : ${username}, fullname : ${fullName}, email : ${email}, password : ${password}`)
+    console.log(`USER CONTROLLER -> GOT INFO FROM USER : username : ${username}, fullname : ${fullName}, email : ${email}, password : ${password}\n`)
 
     // if (fullName === "") {
     //     throw new ApiError(400, "fullname is required")
@@ -30,32 +30,37 @@ const registerUser = asyncHandler( async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
 
     if (existedUser) {
-        throw new ApiError(409, "User with email or username already exists")
+        throw new ApiError(409, "User with username or email already exists")
     }
 
-    const avtarLocalPath = req.files?.avtar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    const avatarLocalPath = req.files?.avatar[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
-    if (!avtarLocalPath) {
-        throw new ApiError(400, "Avtar is required");      
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
     }
 
-    const avtar = await uploadOnCloudinary(avtarLocalPath)
+    if (!avatarLocalPath) {
+        throw new ApiError(400, "Avatar is required");      
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
 
-    if (!avtar) {
-        throw new ApiError(400, "Avtar is required")
+    if (!avatar) {
+        throw new ApiError(400, "Avatar is required")
     }
 
     const user = await User.create(
         {
             fullName,
-            avatar:avtar.url,
+            avatar:avatar.url,
             coverImage: coverImage?.url || "",
             email,
             password,
@@ -63,13 +68,15 @@ const registerUser = asyncHandler( async (req, res) => {
         }
     )
 
-    const createdUser = User.findById(user._id).select("-password -refreshToken")
+    const createdUser = await User.findById(user._id).select("-password -refreshToken")
+    console.log(`USER CONTROLLER -> CREATED USER : ${createdUser.toString()}\n`)
 
     if (!createdUser) {
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 
-    return res.status(201).json(
+
+    return await res.status(201).json(
         new ApiResponse(200, createdUser, "User registered successfully")
     )
 
@@ -98,4 +105,9 @@ export {registerUser}
 95) now next step is password refresh token remove karaychet but te baguch pudhe but next step ahe ki user successfully create zalay ka nahi te check karaychay so tyasathi apan directly karuch shakto null ahe ka nahi response but tyacha peksha better approach ek asu shakto ki direct db lach vichara ki user create zalay ka nahi. so yasathi User.findById hi ek method deta mongoose apnala jyat apan id la pass karu shakto. so as we know mongodb pratek entry barobar ek _id navachi field ek automatic generate kartach na ji pratek record chi unique id aste.so tyamulech jasa apnala he user milel na tasa tyat apnala saglya fields miltat jya apan pass kelelya save karnyasathi so tyachabarobarach apnala ek field milte _id. so tyat ti pass keli and jrr user milala trr user create zalela asnar db madhe and tyala pn await kela and tyala createdUser var madhe store kela. now apnala password and refreshToken la remove karaych hota na so aplyala User madhech anki ek method milte select navachi also so apan methods na chain karu shakto like User.findById.select asa. now ya select through apan aplyala pahijet tya fields na apan select karu shakto. so hi select method use kashi karaychi trr yat apnala string pass karavi lagte jara weird syntax ahe but kasa trr so yat apan te nahi takat ki apnala ky pahije trr apan yat lihito ky ky apnala nko ahe te bec bydefault trr sagle selected astat fields email, username etc. sagle but apnala password and refreshToken nakoy na so - asa minus sign laun tya tya field cha name takaych ji field apnala nakoy ti so -password takla and then dyaycha space and dusri field ji nakoy ti which is -refreshToken takli. so ithe ky honar ki apan pahila find karnar user la id ne so to user yenar and then tya alelya user object madhil password and refreshToken ya don fields na apan kadun taknar ka trr because ha jo user alay to as a response apnala pathavaychay so response madhe pass and refreshToken pathavun ky karaychay na tyachi ky need nahi. now jrr he createdUser empty asel check kela khali if madhe trr error dya but ata chuk apli asnar jrr user save zala nasel trr db la na so tyamule error madhe takla 500 ki server chi chuki ahe and ek message dila. so he pn apan kela user create zalay ka check pn kela and tya don fields na remove pn kela. 
 
 96) now last step is ki jrr user successfully create zala asel trr tyala as a res return pn kara. now response sathi pn apan ek util class create keleli na ApiResponse so apan always tya class cha use karunach res send karaycha like ApiError jenekarun nehmi proper same structure cha res user la jail. so tya ApiResponse la import kela. so return kela res.status la and tyat takla 201 ki sagla kahi ok ahe then .json kela bec json res apnala send karaychay and tyat ek object pass karaych asta so apan tithe { createdUser } asa pathau shakat hoto but apan organised res pathavaychay so tyasathi ApiResponse class use karu so json madhe ek new object create kela ApiResonse class cha and tyat status code then data madhe createdUser la as it is pass kela. so zala hech yevda karaych asta user la save karnyasathi db la. so yala test karaych pudhe bagu ata.
+
+97) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% VIDEO NO. 15 STARTED %%%%%%%%%%%%%%%%%%%%%%%%%%%%% so ata bagu ata yache postman madhe collections vagere kase create karayche, postman la configure kasa karaych, data kasa send karaycha so sagla bagu so chala backend_notes.txt file madhe tithe charcha karu.
+
+102) so ata jrr mi coverImage na thevta req send keli but error ali but mala asa nakoy na coverImage jari user ne dili nahi tari chalel na ti optional ahe but error ali so ti error ali bec of cover image cha local path kadtoy na coverImageLocalPath ya var madhe so tithe ? he lavlyamule issue yetoy ki ? yachamule nehmich proper check hota asa nahi sangu shakat apan ki coverIMage aliye ka nahi aliye and apan ? takun only direct tya cover image cha local path la cloudinary la pn pass kelay. so tyamule ithe apnala ek if condition lavavi lagnar ji check karel cover image actually aliye ka nahi. so if condition takli pahila check kela req.files ahe ka then and ji req.files madhe coverIMage yenare ti array ahe ka so req.files array madhech images na pass karta means coverImage{[]} asa object pass karta so coverIMage chay so tyacha object asnar and tyacha at array asnar so to array ky ahe trr images cha array ahe so tayt array madhe images asnar and tyat pratek image chi or file chi purn info aslela ek ek object asnar pratek file cha. so te check kela ki array ahe ka then check kela ki tyachi length greater than 0 ahe ka. so he sagla asel tarach tya variable madhe coverIMage la taka ortherwise te variable null rahil na so toch problem ala hota so apan pahila ? he laun varable madhe cover image cha path save kelta na but jrr tyala coverIMage nahi milali trr te undefined return karaych so coverIMageLocalPath var madhe pn undefined yaycha and undefined khali user create kartana apan coverImage la condition takliye na ki cover image asel trr tila pathav and jrr nasel trr null pathav so tya var madhe undefined aslyamule first condition satisfy vaychi and undefined jaych save honyasathi but apan undefined nahi na save karu shakat string madhe so tyamule TypeError: Cannot read properties of undefined hi error ali hoti so ata jr cover image asel trr tyat ti store hoil otherwise null asel tyat so khali user create kartana pn null vali condition satisfy hoil. 
+
 */
