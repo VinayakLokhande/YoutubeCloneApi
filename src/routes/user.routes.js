@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser } from "../controllers/user.controller.js"
+import { registerUser, loginUser, logoutUser, refreshAccessToken } from "../controllers/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
 
@@ -25,6 +25,8 @@ router.route("/login").post(loginUser)
 // secured routes
 router.route("/logout").post(verifyJWT, logoutUser)
 
+router.route("/refresh-token").post(refreshAccessToken)
+
 
 export default router
 
@@ -38,4 +40,6 @@ export default router
 115) now anki ek route create kela login sathi so kela and loginUser la pn import kela user controller madhun and tyala tya route madhe pass kela post req madhe. now logout cha pn route lihu so logout cha ek route create kela and user.controller madhun logoutUser controller la pn import kela and post method create karun tyat takla now apnala tya auth middleware la pn inject karaychay na so logoutUser controller cha adi mi aplya auth middleware la takla and coma dila that't id yevdach karaycha asta middleware la inject karayla. so ata jasa user ha logout cha url hit karnar tasa controll ithe yenar so first check karnar te ki kutla middleware ahe ky so ata ahe so tyat janar and first middleware excute karnar. then tya middleware madhe apan next() dilay na so asach apan ya route madhe pudhe coma deun kiti pn middleware inject karu shakto so middleware asel pudhe ajun trr next() mule tya pudhacha middleware la execute karayla compiler chalu karnar and jrr ata middleware sample suppose like ata apan ekach middleware lihila hota ata sample na middleware so next() mule ata controll janar controller var apan logoutUser controller dilay na tyat janar controll. so tyamule middleware lihitana always next() shevti lavaychach otherwise apli app aplya middleware madhech stuck houn jail na bec tila mahitach nahi ki yachanantrr mala pudhe jaychay ka nahi. so now sagla scene ky zala baga. so pahila route madhe middleware sapdla tyala na so execution auth.middleware.js file madhe gela so tithe first token kadla jrr cookies madhe asel trr te otherwise header madhun kadla then tyachavarun user la find kela and tyala req madhe add kela na and next() la call kela. now next ky call honar route madhil logoutUser na. so apan logoutUser controller lihit hoto na but madhech he auth middleware kashasathi lihila karan aplyakade user id navti ti shodhnyasathi na. so ti apan shodhali and tyala req madhe add kela na already. so ata apan he pn mhanuch shakto na mg ki user.controller.js file madhil req param madhe ata aplyakade user object ahe na jyacha through apan user chi info kadu shakto jasa ki apan req.body karun kadat hoto tasach apnala ata req.user karaychay right. so he user kutla trr je apa auth middlware madhe req madhe add kela na so tyach user through ata apan tya logoutUser controller madhe current user chi sagli info kadu shakto.
 
 116) so chala user.controller.js file madhe yala access karu.
+
+122) so ha secured route ahe ka trr yes ahe bec he generate karnyasathi user login asla pahije so tyamule ya route la secured route madhe takla. then ek endpoint takla and tyat refresh token controller la call kela. so apnala ithe verfiyJWT nahi na karav lagnar logout sarkha because apan salga verification trr same refresh token cha controller madhech kelay so no need to inject tyat verifyJWT middleware na.
 */

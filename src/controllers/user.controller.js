@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.model.js"
 import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
+import jwt from "jsonwebtoken"
 
 
 const generateAccessAndRefreshTokens = async (userId) => {
@@ -186,12 +187,57 @@ const logoutUser = asyncHandler( async (req, res) => {
 })
 
 
+const refreshAccessToken = asyncHandler( async (req, res) => {
+    
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request")
+    }
+
+    const decodedToken = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+    )
+
+    const user = await User.findById(decodedToken?._id)
+
+    if (!user) {
+        throw new ApiError(401, "invalid refresh token")
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+        throw new ApiError(401, "Refresh token is expired or used")
+    }
+
+    const {accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user?._id)
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res.
+        status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", newRefreshToken, options)
+        .json(
+            new ApiResonse(
+                200,
+                { accessToken, newRefreshToken },
+                "access token refreshed successfully"
+            )
+        )
+})
+
+
 
 
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
 }
 
 
@@ -239,5 +285,11 @@ export {
 111) so yachsathi apan apla pahila middleware ek design karu so middlewares folder madhe auth.middleware.js file ek create keli. so yat pan smae multer.middleware.js file madhe jasa middlware apan lihila nad tyala route madhe inject kela na tasach karnare apan so chala tya file madhe.
 
 117) now req madhe user ahe so tyatun mg ._id karun id kadli. so ata ky karnar mi just ya id ne db madhun tya user la access karnar and tyacha refresh token la delete karnar that's it evadach karaychay na ata apnala. so ata findById method pn use karu shakto but tyachamule apnala id ne user la find karav lagnar then user alay ka bagav lagnar then update sathi anki ek db call karava lagnar so he pn karuch shakto but tyachapeksha ek method pn aste update sathi mongoose apnala deta so ti use keli findByIdAndUpdate. so tyat ata query magta te ki kashathrough find karaychay means basically where condition so id la pass kela user madhun kadun. now update karaychay so ek {} object chalu karaycha and tyat ata mongodb che operators use karaych $set so he set same aplya update sql query sarkhach asta so set magta ki ky ky update karaychay te sangla te te dilelya user cha mi update karen. so tyat refreshToken la takla and tyala sangitla ki tyala krr undefined. then anki ek param yat pass karu shakto so anki ek khali object chalu kela andd tyat new: true kela. so yachamule ky honar ki apan ata update keli na value ek so ata ti update zalelya value cha object apnala milel ata. so he nahi kela trr apnala old objectach milnar tya user cha jyat ajun te token asnar na so mg ky fayda na so tyamule update kelyavar he always lavaych. so now token trr delete zala ata cookies na pn delete kela phaije na so tyasathi lagel options cookies che httponly and secure te vale so te takle. then ata return karaychay na response ki logout zalay mhanun so tyasathi return kela res tyat status code takla nad cookies na ithe apan clear karu shakto tyat apnala ek method milte clearCookie kashathrough trr cookie parser through and tyat tich key dyaychi ji apan add kartana dileli kutli trr user login kartana apna cookies add kelya na so tya add kartana key value madhil ji key dileli ti ghyaychi and tyachat dili and options pn pass kele karan te karave lagtat. so similarly refreshtoken la pn cookies madhun delete karaycha. so ata db madhun trr delete zalelech ahet token so user kadun pn delete zale ata and ek json res pass kela. so zala user logout zala. 
+
+118) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% VIDEO NO. 17 STARTED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% so access and refresh token baddal jara charcha karu so chala backend_notes.txt file madhe. 
+
+120) so refreshAccessToken ek controller create kela. now apan access token la refresh kasa karu shakto so frontend valyala mala refresh token pathavavach lagnar right. so mg refresh token kutun yenar so cookies madhun access karu shakto like jrr koni pn tya endpoint la hit karat asel trr mi cookies through tyala access karu shakto so req.cookies.refreshToken ne tyala access kela but mobile madhe trr cookies nastat na so tyamule or kela and req.body.refreshToken kela ki hou shakta ki to body madhun refresh token pass karat asel and yala save kela eka var madhe.but jrr refresh token milalach nahi trr error ek throw keli. now je token frontend kadun yetay tyala verify pn kela pahije na. so jwt madhe apnala verifiy chi method milte na apan auth middleware madhe bagitlaych kasa karaych verify so tyasathi ithe pn jwt la import kela. now yachamule apnala decoded info milte na tya token la decrept karun apan kadto. but frontend kade je token asta te encrypted asta na so ata je aplyakade incomingRefreshToken var madhe je token asnar te encrypted asnar na right so tyala decrept kela pahije so tyasathi tya verify method madhe te alela token ek pass kela and yala decrypt kasa karaych te pn sangitla pahije na so tyasathi lagnar secret ki so refresh token chi secret ki dili. so he ata decoded token denar na apnala. now asa kahi nasta ki je apnala decoded token milalay tyat payload aselach. so refresh token apan user.model.js file madhe create kartoy na so tyat only id la payload madhe save kelela na. so decode zalay token so ti id pn ata apan access karu shakto. so ata tya id cha use karun ek query maru mongodb la and tya id cha user la find karu. so kela find user la and jrr nahi milala trr ek error throw keli. now aplyakade ata user ahe so apan user madhe refreshToken la pn save kelay na je ki encryptedach ahe so ata aplyakade user pn ahe so tyacha token la ghetla and ata frontend madhun je refresh token alay te pn encrypted ahe so apan ya dogana match karu shakto na ki donhi same ahet ka. so ek if condi takli donhi tokens jrr same nastil trr error throw keli. now jrr donhi same astil trr ok na sagla varification complete zalay so ata just ek new token create kara and tyala replace kara. so yach sathi varti ek generateRefreshAndAccessToken method create keleli na ti yach sathi ki ya method through apan new tokens create karu shaku mhanun. 
+
+121) so tyasathi ti method call keli and tyat id la pass kela. and tyatun don tokens miltat na apnala so tyana destructure karun save kela vars madhe. so cookies madhe pass karaychet he tokens na so option je takto apan httpOnly and secure te ghetle. now res madhe pass karu yana so res ghetla and cookies madhe te donhi tokens and options pass kele and apiresponse la ek pass kela. so decode jithun kela apan token la tithun code la try catch madhe taklela changlay karan tyat apan db calls vagere kartoy so error yeu shakte. so tithun try catch block madhe takla jari nahi takla tari chaltach but just for safe side takla. so now aplyakade tokens refresh karaych pn controller ahe so ata yacha endpoint pn create karu ek so chala user.routes.js file madhe.
 
 */
