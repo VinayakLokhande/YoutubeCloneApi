@@ -41,5 +41,8 @@ export default router
 
 116) so chala user.controller.js file madhe yala access karu.
 
-122) so ha secured route ahe ka trr yes ahe bec he generate karnyasathi user login asla pahije so tyamule ya route la secured route madhe takla. then ek endpoint takla and tyat refresh token controller la call kela. so apnala ithe verfiyJWT nahi na karav lagnar logout sarkha because apan salga verification trr same refresh token cha controller madhech kelay so no need to inject tyat verifyJWT middleware na.
+122) so ha secured route ahe ka trr yes ahe bec he generate karnyasathi user login asla pahije so tyamule ya route la secured route madhe takla. then ek endpoint takla and tyat refresh token controller la call kela. so apnala ithe verfiyJWT nahi na karav lagnar logout sarkha because apan salga verification trr same refresh token cha controller madhech kelay so no need to inject tyat verifyJWT middleware na. %%%%%%%%%%%%%% VIDEO NO. 17 FINISHED %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+123) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% VIDEO NO. 18 STARTED %%%%%%%%%%%%%%%%%%%%%%%%%%%%% so ata subscription cha model lihu means user ne kunala subscribe kelay also mala swatahala kiti janani subscribe kelay he sagla handle karnar apan. so yach working kasa asnar so suppose mi kunacha tari channel la subscribe kelay trr te jyacha channel ahe to pn user asnar na and mi pn ek user ahe so mi tyacha channel la subscribe kelay means eka user ne dusrya user la subscribe kelay na basically. so hech trr ahe apnala just users madhe relationships generate karaychet. so apnala subscription cha model mahe subscriber ek feild ghenar and channel ek feild ghenar and doghe pn user la link karayche. so subscriber madhe apnala jyani jyani subscribe kelay te user add honar na so te array madhe tyanchi list store karavi lagnar so tithe array create karaycha. so subscriptions.model.js file create keli chala tyat.
+
 */
