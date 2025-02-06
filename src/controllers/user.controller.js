@@ -231,13 +231,162 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 })
 
 
+const changeCurrentPassword = asyncHandler( async(req, res) => {
+
+    {oldPassword, newPassword} = req.body
+
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+
+    if (!oldPassword) {
+        throw new ApiError(400, "Invalid old password")
+    }
+
+    user.password = newPassword
+
+    await user.save({validateBeforeSave : false})
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "password changed successfully"
+        )
+    )
+
+})
+
+
+const getCurrentUser = asyncHandler( async(req, res) => {
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            req.user,
+            "current user fetched successfully"
+        )
+    )
+})
+
+
+const updateAccountDetails = asyncHandler( async(req, res) => {
+    {fullName, email} = req.body
+
+    (!fullName || !email) {
+        throw new ApiError(400, "All feilds are required")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                fullName,
+                email
+            }
+        },
+        {
+            new : true
+        }
+    ). select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "account details updated successfully"
+        )
+    )
+
+})
+
+
+const updateUserAvatar = asyncHandler( async(req, res) => {
+
+    const avatarLocalPath = req.file
+
+    if (!avatarLocalPath) {
+        throw new ApiError(400, "avatar file is missing")
+    }
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath)
+
+    if (!avatar.url) {
+        throw new ApiError(400, "error while uploading on avatar")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            avatar: avatar.url
+        },
+        {
+            new: true
+        }
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user,
+            "avatar image updated successfully"
+        )
+    )
+
+})
+
+
+const updateUserCoverImage = asyncHandler( async(req, res) => {
+
+    const coverImageLocalPath = req.file
+
+    if (!coverImageLocalPath) {
+        throw ApiError(400, "cover image not found")
+    }
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    if (!coverImage.url) {
+        throw new ApiError(400, "error while uploading cover image")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            coverImage : coverImage.url
+        },
+        {
+            new : true
+        }
+    ).select("-password")
+
+    return res
+    .status(200)
+    .json(
+        200,
+        user,
+        "cover image updated successfully"
+    )
+
+})
 
 
 export {
     registerUser,
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changeCurrentPassword,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+    updateUserCoverImage
 }
 
 
@@ -291,5 +440,15 @@ export {
 120) so refreshAccessToken ek controller create kela. now apan access token la refresh kasa karu shakto so frontend valyala mala refresh token pathavavach lagnar right. so mg refresh token kutun yenar so cookies madhun access karu shakto like jrr koni pn tya endpoint la hit karat asel trr mi cookies through tyala access karu shakto so req.cookies.refreshToken ne tyala access kela but mobile madhe trr cookies nastat na so tyamule or kela and req.body.refreshToken kela ki hou shakta ki to body madhun refresh token pass karat asel and yala save kela eka var madhe.but jrr refresh token milalach nahi trr error ek throw keli. now je token frontend kadun yetay tyala verify pn kela pahije na. so jwt madhe apnala verifiy chi method milte na apan auth middleware madhe bagitlaych kasa karaych verify so tyasathi ithe pn jwt la import kela. now yachamule apnala decoded info milte na tya token la decrept karun apan kadto. but frontend kade je token asta te encrypted asta na so ata je aplyakade incomingRefreshToken var madhe je token asnar te encrypted asnar na right so tyala decrept kela pahije so tyasathi tya verify method madhe te alela token ek pass kela and yala decrypt kasa karaych te pn sangitla pahije na so tyasathi lagnar secret ki so refresh token chi secret ki dili. so he ata decoded token denar na apnala. now asa kahi nasta ki je apnala decoded token milalay tyat payload aselach. so refresh token apan user.model.js file madhe create kartoy na so tyat only id la payload madhe save kelela na. so decode zalay token so ti id pn ata apan access karu shakto. so ata tya id cha use karun ek query maru mongodb la and tya id cha user la find karu. so kela find user la and jrr nahi milala trr ek error throw keli. now aplyakade ata user ahe so apan user madhe refreshToken la pn save kelay na je ki encryptedach ahe so ata aplyakade user pn ahe so tyacha token la ghetla and ata frontend madhun je refresh token alay te pn encrypted ahe so apan ya dogana match karu shakto na ki donhi same ahet ka. so ek if condi takli donhi tokens jrr same nastil trr error throw keli. now jrr donhi same astil trr ok na sagla varification complete zalay so ata just ek new token create kara and tyala replace kara. so yach sathi varti ek generateRefreshAndAccessToken method create keleli na ti yach sathi ki ya method through apan new tokens create karu shaku mhanun. 
 
 121) so tyasathi ti method call keli and tyat id la pass kela. and tyatun don tokens miltat na apnala so tyana destructure karun save kela vars madhe. so cookies madhe pass karaychet he tokens na so option je takto apan httpOnly and secure te ghetle. now res madhe pass karu yana so res ghetla and cookies madhe te donhi tokens and options pass kele and apiresponse la ek pass kela. so decode jithun kela apan token la tithun code la try catch madhe taklela changlay karan tyat apan db calls vagere kartoy so error yeu shakte. so tithun try catch block madhe takla jari nahi takla tari chaltach but just for safe side takla. so now aplyakade tokens refresh karaych pn controller ahe so ata yacha endpoint pn create karu ek so chala user.routes.js file madhe.
+
+125) now apnala lihaychay controller for update password. so user la jrr password change karaycha asel trr to tenva ya route la hit karel. so now jo user logged in ahe already tyacha password mala change karaychay na so mg mi current user la kasa ghenar. simple ahe na apan auth.middleware.js file middleware create kelaych na so just tyat mi access token through current user la kadto and tyala req madhe user ek object create karun tyat inject karto na so ata apan req.user karun tyala kute pn access karu shakto na. so techa karu so pahila user oldPassword and newPassword apnala deil so te body madhun ghetla. so kadi kadi old, new and confirm pass pn detat na so tya case mdhe just check karaychay ki new and confirm same ahe ka tarach change karu dyaycha pass la tari pn he checking trr frontend lach keli pahije and tithech hote tari pn apan ek if condi takun check karu shakto. so then tya user la access kela and tyachatil id through logged in user la kadla. then jo oldPass taklay to correct ahe ka te pn check kela pahije na. so tyasath apan already method lihilich ahe user.model.js file madhe isPasswordCorrect so tila use kela and tyat oldPass la pass kela. and jrr pass correct nasel trr error throw keli. and jrr oldPass user ne correct takla asel trr to pass la update karu shakto so user.password madhe tya new password ta takla. so he taklya taklay mg ky honar ki user model madhe apan ek save honyaadi ek middleware call zala pahije to lihila hota na pre("save") ha vala. so te ky karta password la gheta and tyala hash karun db madhe save karta na so tech honar ithe. so apan only user.pass madhe newpass la taklay but yala save pn kela pahije na so user.save() kela and tyat validatebeforesave la false kela ka te apnala mahitach ahe ki dusrya feilds na he save kartana validate or check karachi need nahi. and zala then pass change zalay trr just res return kela that's it evdach karaycha asta.
+
+126) now apnala current user chi pn info satat lagu shakte so tyasathi pn ek controller create karu jyach route call kelay kelay ti info aplyakade yeyil. so he trr khup simple ahe ka trr bec aplyakade already req.user madhe current user chi info trr ahech na so ticha through only id kadaychi ahe and tya id cha user db madhun find karaychay and return karaychay that's it. so mi flow nahi sangat controller bagu shakta varti. 
+
+127) then asa pn hou shakta ki pass trr change karayla dila but tyach barobar user la bakicha pn details change karaycha asu shaktat na. so tyasathi pn ek route create kelela changla na. bec pass trr change karayla dila but te eka dusrya page bar pass change honar na frontend la so ya bakicha feilds update karayla eka dusrya page var dilya pahijet na. so ata ky ky update karaychay te apna decide karaycha. so youtube madhe username la satat change karaychi permission youtube nahi det na so apan tyala sodun bakichi info update karayla deu. so yasathi pn ek controller create kela updateAccountDetails. then anki ek ki jrr apnala files na pn update karaych asel trr tyanche vegle controllers lihayche. karan tech changla asta. apan ekach controller madhe karu shakto te pn like registration madhe jasa apan user chi info plus files ekach controller madhe ghetli hoti na so tasa pn karuch shakto but production grade code madhe pn he veg veglya files madhe asta. like youtube or instagram madhe pn veglach ahe te na ki jrr avatar change karaycha asel trr or coverImage change karaychi asel trr tyasathi veglya page var jato apan. so simple ithe pn body madhun info ghetli mi fullName and email la update kartoy. then jrr nasel trr error throw keli. then user la find kela id through current user cha and also update karaychay so tya id la pass kela and dusrya param madhe ky ky feilds update karaycha ahet tyana eka object madhe pass kela and tisrya param madhe new true kela jyamule user update zalya zalya tyacha new instance apnala milele. and also password la remove kela select ne. and just response return kela.
+
+128) now files update karaycha astil tar tya case madhe pn jast kahi hard nahi. just apnala upload karaycha adi multer cha middleware la call karav lagnar because pahila tila local server la upload kela pahije na and also anki ek middleware lagnar to mhanje user login ahe ka te ek check karaycha so tarach tyala files na update karta ala pahije na so tyasathi ek middleware call karaycha so route lihitana he don middlewares apnala call karaychet controller cha adi. so avatar and coverImage donhi files update karnyasathi veg vegle controllers lihinar apan. so asach asta na youtube madhe pn. so pahila avtar cha lihila. so tyat pahila ghetla req.file so he apnala file la access karun denar kasa trr multer middleware through na. so hech apan registration cha controller madhe pn kela hota na but tithe use kela hota files na ka trr bec tithe avatar and also coverIMage donhi yenar hote na or multiple files yenar hotya tithe also apan route lihila tya registration cha tithe pn upload.feilds kela na and tyat array pass kela na files cha so tyamulech tithe tasa vaparla but ithe apnala te nahi karaychi need just ekach file yenare apnala mahiti ahe. so same local path kadaych and upload karaych same kela. and update kela tya only feild la and return kela res la.
+
+129) and same to same coverIMage cha pn kela.
 
 */
