@@ -233,7 +233,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
 
 const changeCurrentPassword = asyncHandler( async(req, res) => {
 
-    {oldPassword, newPassword} = req.body
+    const {oldPassword, newPassword} = req.body
 
     const user = await User.findById(req.user?._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
@@ -273,9 +273,9 @@ const getCurrentUser = asyncHandler( async(req, res) => {
 
 
 const updateAccountDetails = asyncHandler( async(req, res) => {
-    {fullName, email} = req.body
+    const {fullName, email} = req.body
 
-    (!fullName || !email) {
+    if (!fullName || !email) {
         throw new ApiError(400, "All feilds are required")
     }
 
@@ -312,6 +312,8 @@ const updateUserAvatar = asyncHandler( async(req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError(400, "avatar file is missing")
     }
+
+    // TODO: first need to tech old image url here. and after updating new image we need to delete that old image so we can use this fetched old image url and delete that file only. same we need to do in cover image as well.
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
 
